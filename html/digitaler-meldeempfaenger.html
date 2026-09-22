@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DME Simulator</title>
+    <link rel="stylesheet" href="../css/digitaler-meldeempfaenger.css">
+</head>
+<body>
+    <div id="connectionState" class="connectionState">● offline</div>
+
+    <main class="dme-container" aria-label="Digitaler Meldeempfänger">
+        <img class="dme-image" src="../assets/images/dme2.jpg" alt="Swissphone BOSS Meldeempfänger">
+
+        <div class="window" aria-live="polite">
+            <div class="textheader"></div>
+            <div class="textarea">FF Lauenburg</div>
+        </div>
+
+        <button class="device-button btnYellow" type="button" aria-label="Meldung bestätigen"></button>
+        <button class="device-button btnUp" id="scrollUp" type="button" aria-label="Nach oben scrollen"></button>
+        <button class="device-button btnDown" id="scrollDown" type="button" aria-label="Nach unten scrollen"></button>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <script src="../js/shared/config.js"></script>
+<script src="../js/shared/config.local.js"></script>
+    <script src="../js/shared/mqtt-client.js"></script>
+    <script src="../js/shared/audio-manager.js"></script>
+    <script src="../js/shared/alarm-model.js"></script>
+    <script src="../js/digitaler-meldeempfaenger.js"></script>
+</body>
+</html>

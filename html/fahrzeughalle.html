@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fahrzeughalle / Wache</title>
+<link href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/fahrzeughalle.css">
+</head>
+<body>
+<main class="hall-shell">
+<header class="hall-topbar">
+  <div><span class="eyebrow">FREIWILLIGE FEUERWEHR · SIMULATION</span><h1>Fahrzeughalle / Wache</h1><small>Rückmeldungen und Fahrzeugstatus</small></div>
+  <div class="top-right"><div id="hallClock" class="clock">--:--:--</div><div id="hallMqtt" class="mqtt offline">● MQTT getrennt</div></div>
+</header>
+
+<section class="hall-grid">
+  <article class="panel incident">
+    <span class="kicker">AKTUELLER EINSATZ</span>
+    <h2 id="hallKeyword">Kein aktiver Einsatz</h2>
+    <div id="hallAddress" class="address">–</div>
+    <div id="hallMessage" class="message">Neue Alarmierungen erscheinen automatisch.</div>
+    <div class="incident-meta"><span>Alarmierung</span><strong id="hallAlarmTime">--:--</strong></div>
+  </article>
+
+  <article class="panel hall-map-panel">
+    <div class="heading"><div><span class="kicker">EINSATZORT</span><h2>Karte</h2></div><span id="hallMapStatus" class="muted">Kein aktiver Einsatz</span></div>
+    <div id="hallMap" class="hall-map"></div>
+  </article>
+
+  <article class="panel responses">
+    <div class="heading"><div><span class="kicker">EINSATZKRÄFTE</span><h2>Rückmeldungen</h2></div><span class="muted">Stadtwehr-Simulation 36</span></div>
+    <div class="response-note">Nur Anzahl und verfügbare Funktionen – keine personenbezogene Anzeige</div>
+    <div class="response-summary">
+      <div><strong id="hallComing">0</strong><span>Kommen</span></div>
+      <div><strong id="hallDeclined">0</strong><span>Kommen nicht</span></div>
+      <div><strong id="hallOpen">0</strong><span>Offen</span></div>
+    </div>
+    <div class="qual-grid">
+      <div><strong id="hallAGT">0</strong><span>AGT</span></div><div><strong id="hallMasch">0</strong><span>Maschinisten</span></div>
+      <div><strong id="hallGF">0</strong><span>Gruppenführer</span></div><div><strong id="hallZF">0</strong><span>Zugführer</span></div>
+      <div><strong id="hallWF">0</strong><span>Wehrführer</span></div><div><strong id="hallBoot">0</strong><span>Bootsführer</span></div>
+    </div>
+  </article>
+
+  <article class="panel vehicles">
+    <div class="heading"><div><span class="kicker">FMS / FAHRZEUGE</span><h2>Ausrückende Fahrzeuge</h2></div><button id="restartVehicles" class="small-btn">↻ Ablauf neu</button></div>
+    <div id="vehicleCards" class="vehicle-grid"></div>
+  </article>
+</section>
+</main>
+
+<script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+<script src="../js/shared/config.js"></script>
+<script src="../js/shared/config.local.js"></script>
+<script src="../js/shared/mqtt-client.js"></script>
+<script src="../js/shared/alarm-model.js"></script>
+<script src="../js/fahrzeughalle.js"></script>
+</body>
+</html>

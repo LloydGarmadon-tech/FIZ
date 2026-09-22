@@ -1,0 +1,28 @@
+# Local secrets / machine-specific configuration
+js/shared/config.local.js
+.env
+.env.*
+!.env.example
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+.vs/
+
+# Dependencies / build output (future-proofing)
+node_modules/
+dist/
+build/
+coverage/

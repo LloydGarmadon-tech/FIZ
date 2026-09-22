@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Feuerwehr Leitstelle</title>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/leitstelle.css?v=45">
+</head>
+<body>
+    <main class="dispatch-shell">
+        <header class="topbar">
+            <div>
+                <div class="eyebrow">FEUERWEHR · SIMULATION</div>
+                <h1>Leitstelle</h1>
+            </div>
+            <div class="topbar-actions">
+                <button id="adminOpen" class="admin-button" type="button" title="Adminbereich öffnen" aria-label="Adminbereich öffnen">⚙ Admin</button>
+                <div id="mqttState" class="mqtt-pill" data-connected="false"><span class="status-dot"></span> MQTT getrennt</div>
+            </div>
+        </header>
+
+        <section class="dashboard-grid">
+            <article class="panel incident-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">Einsatzaufnahme</span>
+                        <h2>Notruf · 5-W-Schema</h2>
+                    </div>
+                    <span id="alarmBadge" class="alarm-badge idle">Bereit</span>
+                </div>
+
+                <div class="dispatch-hint">
+                    <span><kbd>Enter</kbd> nächstes Feld</span>
+                    <span><kbd>Strg</kbd> + <kbd>Enter</kbd> alarmieren</span>
+                </div>
+
+                <div class="w-flow" id="wFlow">
+                    <section class="w-step active" data-step="1">
+                        <div class="w-step-head"><span class="w-number">1</span><div><strong>WO ist das Ereignis?</strong><small>Einsatzort zuerst erfassen</small></div><span class="w-check">✓</span></div>
+                        <div class="form-grid location-grid">
+                            <label class="field"><span>Straße</span><input class="street flow-input" placeholder="Straße" autocomplete="off"></label>
+                            <label class="field compact"><span>Nr.</span><input class="number flow-input" placeholder="12" autocomplete="off"></label>
+                            <label class="field full"><span>Ort</span><input class="city flow-input" placeholder="Ort" autocomplete="off"></label>
+                        </div>
+                    </section>
+
+                    <section class="w-step" data-step="2">
+                        <div class="w-step-head"><span class="w-number">2</span><div><strong>WER ruft an?</strong><small>Anrufer / Rückrufbezug</small></div><span class="w-check">✓</span></div>
+                        <label class="field"><span>Name / Anrufer</span><input class="name flow-input" placeholder="Name" autocomplete="off"></label>
+                    </section>
+
+                    <section class="w-step" data-step="3">
+                        <div class="w-step-head"><span class="w-number">3</span><div><strong>WAS ist geschehen?</strong><small>Stichwort und Lagebild</small></div><span class="w-check">✓</span></div>
+                        <label class="field keyword-field">
+                            <span>Einsatzart / Stichwort</span>
+                            <div class="keyword-combobox">
+                                <input class="mission flow-input"
+                                       id="missionKeyword"
+                                       placeholder="Stichwort suchen oder auswählen"
+                                       autocomplete="off"
+                                       role="combobox"
+                                       aria-autocomplete="list"
+                                       aria-expanded="false"
+                                       aria-controls="missionSuggestions">
+                                <button class="keyword-toggle" id="keywordToggle" type="button" aria-label="Stichwortliste öffnen">⌄</button>
+                                <div id="missionSuggestions" class="keyword-suggestions is-hidden" role="listbox"></div>
+                            </div>
+                        </label>
+                        <label class="field"><span>Lage / Zusatztext</span><textarea class="freetext flow-input" rows="3" placeholder="Was ist passiert? Welche Gefahr besteht?"></textarea></label>
+                    </section>
+
+                    <section class="w-step" data-step="4">
+                        <div class="w-step-head"><span class="w-number">4</span><div><strong>WIE VIELE Betroffene?</strong><small>Personenanzahl für die Disposition</small></div><span class="w-check">✓</span></div>
+                        <label class="field affected-field"><span>Anzahl Betroffene</span><input class="affected-count flow-input" type="number" min="0" step="1" inputmode="numeric" placeholder="z. B. 1"></label>
+                    </section>
+
+                    <section class="w-step waiting-step" data-step="5">
+                        <div class="w-step-head"><span class="w-number">5</span><div><strong>WARTEN auf Rückfragen</strong><small>Angaben prüfen, Gespräch halten, alarmieren sobald ausreichend</small></div><span class="w-check">✓</span></div>
+                        <label class="field"><span>Rückfragen / weitere Hinweise</span><textarea class="callback-notes flow-input" rows="2" placeholder="Ergänzungen während des Gesprächs"></textarea></label>
+                    </section>
+                </div>
+
+                <div class="quick-dispatch-bar">
+                    <div class="dispatch-readiness"><span id="readinessDot"></span><div><strong id="readinessText">Notruf wird aufgenommen</strong><small id="readinessDetail">Mit dem Einsatzort beginnen</small></div></div>
+                    <div class="action-row">
+                        <button class="btn btn-ghost btnLocate" type="button">Ort auf Karte</button>
+                        <button class="btn btn-secondary btnTestAlert" type="button">Testalarm</button>
+                        <button class="btn btn-ghost btnClear" type="button">Clear</button>
+                        <button class="btn btn-primary btnAlert" type="button">Alarmieren <span class="shortcut">Strg↵</span></button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel map-panel">
+                <div class="panel-heading compact-heading">
+                    <div>
+                        <span class="panel-kicker">Einsatzort</span>
+                        <h2>Karte</h2>
+                    </div>
+                    <span id="mapStatus" class="map-status">Lauenburg/Elbe</span>
+                </div>
+                <div id="map" aria-label="Karte des Einsatzortes">
+                    <div class="map-placeholder" id="mapPlaceholder">
+                        <div class="map-placeholder-icon">⌖</div>
+                        <strong>Karte bei Bedarf laden</strong>
+                        <span>Die Leitstelle bleibt schnell. Erst „Ort auf Karte“ startet Kartensuche und Kartendienst.</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel feedback-panel vehicle-panel">
+                <div class="panel-heading compact-heading">
+                    <div>
+                        <span class="panel-kicker">Fahrzeugfunk</span>
+                        <h2>Fahrzeugstatus</h2>
+                    </div>
+                    <span id="vehicleAlarmId" class="muted-label">Kein aktiver Einsatz</span>
+                </div>
+
+                <div class="feedback-summary vehicle-summary">
+                    <div class="summary-tile"><strong id="countStatus2">0</strong><span>Status 2 · Wache</span></div>
+                    <div class="summary-tile"><strong id="countStatus3">0</strong><span>Status 3 · ausgerückt</span></div>
+                    <div class="summary-tile"><strong id="countStatus4">0</strong><span>Status 4 · angekommen</span></div>
+                </div>
+
+                <div id="vehicleList" class="feedback-list vehicle-list">
+                    <div class="empty-state">Nach der Alarmierung erscheinen hier die Fahrzeugstatus aus der Wache.</div>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel units-panel exercise-footer">
+            <div class="panel-heading compact-heading">
+                <div>
+                    <span class="panel-kicker">Kommunikation</span>
+                    <h2>Teilnehmer / Leitstellen</h2>
+                </div>
+            </div>
+            <div class="unit-grid">
+                <button class="unit-btn">K 358 RZ</button><button class="unit-btn">K 359 OD</button><button class="unit-btn">K 450 OH</button>
+                <button class="unit-btn">K 468 RZ</button><button class="unit-btn">K 409 OD</button><button class="unit-btn">K 407 OH</button>
+                <button class="unit-btn">POL RZ</button><button class="unit-btn">POL OD</button><button class="unit-btn">POL OH</button>
+                <button class="unit-btn">IRLS Nord</button><button class="unit-btn">Leitstelle HH</button><button class="unit-btn">Leitstelle WL</button>
+                <button class="unit-btn">Amt</button><button class="unit-btn">Zentrale</button><button class="unit-btn">Leiter</button>
+                <button class="unit-btn emergency" id="notruf">Notruf RZ</button><button class="unit-btn emergency">Notruf OD</button><button class="unit-btn emergency">Notruf OH</button>
+            </div>
+        </section>
+
+        <dialog id="adminDialog" class="admin-dialog">
+            <div class="admin-dialog-card">
+                <div class="admin-dialog-head">
+                    <div>
+                        <span class="panel-kicker">Administration</span>
+                        <h2>Systemprotokoll</h2>
+                        <p>Technische MQTT- und Kartenereignisse. Für den Übungsablauf nicht erforderlich.</p>
+                    </div>
+                    <button id="adminClose" class="admin-close" type="button" aria-label="Adminbereich schließen">×</button>
+                </div>
+                <div class="admin-status-row">
+                    <span id="adminMqttState" class="admin-status-chip">MQTT: unbekannt</span>
+                    <button class="text-button" id="clearLog" type="button">Protokoll leeren</button>
+                </div>
+                <div class="messages admin-messages" id="messages" aria-live="polite"></div>
+            </div>
+        </dialog>
+    </main>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <script src="../js/shared/config.js"></script>
+<script src="../js/shared/config.local.js"></script>
+    <script src="../js/shared/mqtt-client.js"></script>
+    <script src="../js/shared/audio-manager.js"></script>
+    <script src="../js/shared/alarm-model.js"></script>
+    <script src="../js/leitstelle.js?v=45"></script>
+</body>
+</html>
